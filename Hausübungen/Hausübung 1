@@ -1,0 +1,90 @@
+Hausaufgabe UE 1 — Daten visualisieren
+
+Name: Anna__ &nbsp;&nbsp;&nbsp; Abgabe: 08.10.2026_
+
+**Lektüre:** R4DS 2e, [Kap. 1 Data visualization](https://r4ds.hadley.nz/data-visualize.html)
+und [Kap. 2 Workflow: basics](https://r4ds.hadley.nz/workflow-basics.html) —
+lies sie zuerst, die Aufgaben bauen darauf auf.
+
+---
+
+## 1. Setup + erstes Ritual
+
+Installiere `tidyverse` und `palmerpenguins` (falls noch nicht geschehen) und
+führe aus:
+
+```r
+library(tidyverse)
+library(palmerpenguins)
+
+glimpse(penguins)
+```
+
+- Wie viele Zeilen (Pinguine)? _344_ &nbsp; Wie viele Spalten? 8____
+- Welchen Typ hat `species`? _<fct>__ &nbsp; `body_mass_g`? __ <int>___
+
+---
+
+## 2. Die Einstiegsfrage nachbauen
+
+Baue im **Skript** (nicht in der Konsole!) das Ziel-Bild aus der Stunde nach:
+
+```r
+ggplot(penguins,
+       aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+  geom_point() +
+  labs(x = "Flossengröße (mm)", y = "Körpermasse (g)")
+```
+
+- Steigt die Körpermasse mit der Flossengröße für **alle drei Arten**? _Durchschnittlich steigt die Körpergröße zusammen mit der Flossengröße Welche Art ist am schwersten? Gentoo
+
+---
+
+## 3. Vorhersagen (ohne R — erst hinschreiben!)
+
+**a)** Was unterscheidet diese beiden Zeilen im Ergebnis?
+
+```r
+ggplot(penguins, aes(x = species, y = body_mass_g)) + geom_point(color = "red")
+ggplot(penguins, aes(x = species, y = body_mass_g, color = species)) + geom_point()
+```
+
+Vorhersage: Ich glaube das bei der oberen Anweisung alles in der Farbe rot dargestellt wird und bei der unteren Anweisung hat jede Spezies eine andere Farbe.
+
+<br>R-Ergebnis (ausführen und vergleichen): _Ja meine Vermutung hat gestimmt 
+
+**b)** Was passiert, wenn du das `+` an den Zeilenanfang stellst?
+
+```r
+ggplot(penguins, aes(x = body_mass_g))
+  + geom_histogram(binwidth = 250)
+```
+
+Vorhersage: Ich glaube es wäre ein Fehler weil dann der Code nicht mehr stimmt 
+
+<br>R-Ergebnis: _Es kommt Error.
+
+---
+
+## 4. Eine eigene Frage finden
+
+Wähle zwei Zahlen-Spalten der Pinguine, die dich interessieren, und baue ein
+Streudiagramm mit sinnvollen `labs()`-Achsentiteln. Ergänze `geom_smooth()`.
+
+- Deine Frage (in einem Satz): _Haben Pinguine mit einem längeren Schnabel auch ein höheres Körpergewicht?
+- Was zeigt der Plot? (2 Sätze): _Die Punkte sind weiter oben, je größer der Schnabel ist. Eine grüne Trendlinie veranschaulicht , dass das Körpergewicht mit der Schnabelgröße steigt.
+---
+
+## 5. Kapitel-Check (Kap. 2 — Workflow: basics)
+
+Antworte in eigenen Worten (1–2 Sätze je Frage):
+
+- Warum steht das `+` in `ggplot2` **immer am Zeilenende** — was würde auch
+  technisch passieren, wenn du es ans Zeilenanfang stellst? Wie meldet sich R?
+
+  _Wenn man das + an den Anfang der Zeile schreibt, dann meldet R einen Error. Das + steht immer hinten, damit R den Befehl akzeptiert. 
+
+- Warum speichert man Werte mit `<-` in einem Skript, statt sie in der
+  Konsole direkt auszurechnen?
+
+  Die Daten gehen dann nicht verloren. 

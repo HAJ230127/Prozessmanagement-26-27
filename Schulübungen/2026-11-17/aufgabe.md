@@ -1,0 +1,164 @@
+# Aufgabe KM7-01 — Mittelwertsvergleich: z-Test und t-Test
+
+Name: _Anna Hajnik____ &nbsp;&nbsp;&nbsp; Abgabe: _____________
+
+**Lektüre:** Navarro, [Learning Statistics with R](https://learningstatisticswithr.com/13-ttest.html)
+(Pflicht) — **Kap. 13, t-Tests**. Die Fragen in Aufgabe 4 beziehen sich auf
+das Kapitel. Ergänzend NIST/SEMATECH e-Handbook, Kap. 7.
+
+**Daten:** `assets/betriebsdaten.csv` — 120 Messungen, 3 Maschinen (M1–M3) ×
+10 Chargen × 4 Teile, Sollmaß 10,00 mm, Toleranz ± 0,15 mm. Vier Messungen
+fehlen (M1: drei, M2: eine).
+
+> **Setup-Ritual:** Lege ein RStudio-Projekt `pmm-km7-01` an, speichere
+> alles in `analyse.R` dort. Daten laden mit
+> `read_csv(".../assets/betriebsdaten.csv")`.
+
+---
+
+## 1. Vorhersagen (ohne R — erst hinschreiben!)
+
+**a)** Wie viele gültige Messungen hat jede Maschine?
+
+```r
+daten |> group_by(maschine) |>
+  summarise(n = sum(!is.na(masse_mm)))
+```
+
+Vorhersage: _M1: 37, M2: 39, M3: 40______
+
+**b)** Welche Maschine hat den größten Abstand zwischen Mittelwert und
+Sollmaß 10,00 mm? Um wie viele Hundertstel?
+
+Vorhersage: _Maschine 3, Um ca. 5 Hundertstel _________
+
+**c)** M1 und M2 unterscheiden sich um 0,024 mm im Mittelwert, die
+Streuungen sind 0,032 mm und 0,040 mm. M1 und M3 unterscheiden sich um
+0,062 mm bei 0,032 mm und 0,070 mm Streuung. **Welcher Vergleich fällt
+statistisch leichter durch — und warum?** (2 Sätze, ohne Formel)
+
+__M1 und M3 würden statitisch leichter durchfallen, weil der Abstand zum Mittelwert größer ist.__
+
+---
+
+## 2. Der ungepaarte Vergleich
+
+Vergleiche **M1 gegen M3** mit dem Welch-t-Test. Schreibe die beiden
+Hypothesen auf, die getestet werden:
+
+- H0: _________________________________________________
+- H1: _________________________________________________
+
+```r
+vergleich <- daten |> filter(maschine %in% c("M1", "M3"))
+t.test(masse_mm ~ maschine, data = vergleich)
+```
+
+- t-Wert: _-5.1132___ &nbsp; Freiheitsgrade: _55.272,_____
+- p-Wert: _4.092e-06___
+- 95-%-Konfidenzintervall der Differenz: ____-0.08658875 -0.03783017________________
+
+**Lies das Intervall in ganzen Sätzen.** M3 liegt um wie viele mm
+*mindestens* über M1 — und um wie viele mm *höchstens*? Vergleiche mit der
+Toleranz von ± 0,15 mm: Passt der gesamte Intervall in die Toleranz, oder
+ragt er hinaus?
+
+___ M3 liegt mindestens ca. 0,04 mm und höchstens ca. 0,09 mm über M1. Das ganze Intervall liegt innerhalb der Toleranz von ± 0,15 mm_________
+
+---
+
+## 3. Der gepaarte Vergleich
+
+M3 und M1 fertigen dieselben 10 Chargen. Baue die Chargenmittel und teste
+**gepaart**:
+
+```r
+chargen <- daten |>
+  group_by(maschine, charge) |>
+  summarise(mm = mean(masse_mm, na.rm = TRUE), .groups = "drop") |>
+  pivot_wider(names_from = maschine, values_from = mm)
+
+chargen$M3 - chargen$M1
+```
+
+**a)** Wie viele der 10 Differenzen sind positiv? __10__________
+Wie viele sind negativ? ___0_________
+
+**b)**
+
+```r
+t.test(chargen$M3, chargen$M1, paired = TRUE)
+```
+
+- t-Wert: _5.9822___________ &nbsp; Freiheitsgrade: __ 9__________
+- p-Wert: _0.000207___________
+
+**c)** Warum hat der gepaarte Test hier **9** Freiheitsgrade, obwohl
+er mit den Daten von 37 bzw. 40 Messungen arbeitet? (2 Sätze)
+Der gepaarte Test rechnet nur mit den 10 Chargen-Differenzen, nicht mit den einzelnen Messungen. Daher gilt df = n − 1 = 9
+_________________________________________________
+
+**d)** Rechne den t-Wert von Hand nach — einmal über die **Differenzen**,
+einmal über die **Messwerte** mit den Mittelwerten aus Aufgabe 1:
+
+- t über die Differenzen: ____________
+- t über die Messwerte (Mittelwert-Differenz / Streuung): ____________
+
+Welcher Wert stimmt mit R überein, und was lernst du daraus über die
+gepaarte Formel?
+
+_________________________________________________
+
+---
+
+## 4. Kapitel-Check (Navarro Kap. 13)
+
+**a)** Erkläre in 2–3 Sätzen, warum man einen t-Test verwendet, wenn &sigma;
+der Grundgesamtheit *nicht* bekannt ist. Was macht der t-Test mit dem
+geschätzten &sigma;, das der z-Test nicht macht?
+
+_________________________________________________
+
+**b)** Ein Kollege sagt nach einem Test mit `p = 0,42`: „Die beiden
+Maschinen sind also gleich gut." Hat er recht? Begründe mit dem Konzept
+der Fehler 1. und 2. Art.
+
+_________________________________________________
+
+**c)** Nenne drei Situationen aus der Fertigung, in denen ein **gepaarter**
+t-Test der richtige ist, und jeweils einen Grund, warum die Werte
+paarweise zusammengehören.
+
+1. _________________________________________________
+2. _________________________________________________
+3. _________________________________________________
+
+---
+
+## 5. Die Frage hinter der Aufgabe
+
+M1 und M2 sind sich im Mittel um 0,024 mm unterschiedlich — der
+ungepaarte Test liefert `p = 0,005456`, also „signifikant".
+
+**a)** Wäre das eine Basis für eine Prozessänderung? Begründe in 3 Sätzen,
+wobei du die Toleranz von ± 0,15 mm und den Sinn von `p` einbeziehst.
+
+_________________________________________________
+
+**b)** Erkläre den Unterschied zwischen diesen zwei Sätzen:
+
+- „M1 und M2 unterscheiden sich signifikant."
+- „M1 und M2 unterscheiden sich *wirtschaftlich* nicht relevant."
+
+Warum sind das zwei verschiedene Aussagen? Welche ist die Stärke des
+Tests, welche seine Grenze?
+
+_________________________________________________
+
+**c)** Wenn du der 0,024-mm-Unterschied *doch* statistisch belegen
+musst: Welche Stichprobengröße bräuchtest du ungefähr, statt der 40 pro
+Maschine? Du musst nicht selbst rechnen — begründe die Richtung:
+mehrt man die Zahl der Teile oder die Zahl der Chargen, und warum ist
+eine davon wirksamer?
+
+_________________________________________________
